@@ -1,3 +1,8 @@
+//! # geogetter
+//!
+//! `geogetter` is a simple library that connects to the OpenStreetMap API to retrive all the information about the
+//! given string
+
 mod url_encoder;
 
 use reqwest::header::USER_AGENT;
@@ -17,7 +22,7 @@ struct Address {
 
 /// Represents the location structure containing latitude, longitude, address type, name, display name, address, and bounding box.
 #[derive(Debug, Serialize, Deserialize)]
-struct Location {
+pub struct Location {
     lat: String,
     lon: String,
     addresstype: String,
@@ -36,7 +41,7 @@ struct Location {
 /// # Returns
 ///
 /// A Result containing a vector of Location structs if successful, or a Box<dyn std::error::Error> if an error occurs.
-async fn get_location(input_str: &str) -> Result<Vec<Location>, Box<dyn std::error::Error>> {
+pub async fn get_location(input_str: &str) -> Result<Vec<Location>, Box<dyn std::error::Error>> {
     let url = format!(
         "https://nominatim.openstreetmap.org/search?addressdetails=1&q={}&format=jsonv2&limit=1",
         url_encoder::url_encoder::encode_str(input_str, true)
