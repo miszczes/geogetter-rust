@@ -4,6 +4,17 @@ pub mod url_encoder {
     use std::io;
     use std::io::BufRead;
     use std::str;
+
+    /// Generates a lookup map for URL encoding based on the contents of a file.
+    ///
+    /// # Arguments
+    ///
+    /// * `file_path` - A string slice representing the path to the file containing encoding mappings.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing a HashMap with characters mapped to their corresponding URL-encoded values if successful,
+    /// or an io::Error if an error occurs.
     pub fn generate_lookup(file_path: &str) -> Result<HashMap<String, String>, io::Error> {
         let mut lookup_map = HashMap::new();
         let file = fs::File::open(file_path)?;
@@ -20,11 +31,25 @@ pub mod url_encoder {
         Ok(lookup_map)
     }
 
-    pub fn encode_str(input: &str) -> String {
+    /// Encodes a string using URL encoding, optionally skipping alphanumeric characters.
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - A string slice representing the input string to be encoded.
+    /// * `skip_alphanumeric` - A boolean indicating whether to skip encoding alphanumeric characters.
+    ///
+    /// # Returns
+    ///
+    /// A string representing the URL-encoded version of the input string.
+    pub fn encode_str(input: &str, skip_alphanumeric: bool) -> String {
         let map = generate_lookup("map.txt").unwrap();
         let mut output = Vec::new();
         for c in input.chars() {
-            output.push(map.get(&c.to_string()).cloned().unwrap())
+            if skip_alphanumeric && c.is_alphanumeric() {
+                output.push(c.to_string())
+            } else {
+                output.push(map.get(&c.to_string()).cloned().unwrap())
+            }
         }
         let vec_str = output.join("");
         vec_str
@@ -77,6 +102,14 @@ mod tests {
         let input = " abcd";
         let expected_output = String::from("%20%61%62%63%64");
 
-        assert_eq!(url_encoder::encode_str(input), expected_output);
+        assert_eq!(url_encoder::encode_str(input, false), expected_output);
+    }
+
+    #[test]
+    fn test_encode_str_skip_alphanumeric() {
+        assert_eq!(
+            url_encoder::encode_str("Lebork, Polska", true),
+            "Lebork%2C%20Polska"
+        )
     }
 }
