@@ -1,8 +1,6 @@
 pub mod url_encoder {
     use std::collections::HashMap;
-    use std::fs;
-    use std::io;
-    use std::io::BufRead;
+    use std::io::{self, BufRead, Cursor};
     use std::str;
 
     /// Generates a lookup map for URL encoding based on the contents of a file.
@@ -15,10 +13,11 @@ pub mod url_encoder {
     ///
     /// A Result containing a HashMap with characters mapped to their corresponding URL-encoded values if successful,
     /// or an io::Error if an error occurs.
-    pub fn generate_lookup(file_path: &str) -> Result<HashMap<String, String>, io::Error> {
+    pub fn generate_lookup() -> Result<HashMap<String, String>, io::Error> {
         let mut lookup_map = HashMap::new();
-        let file = fs::File::open(file_path)?;
-        let file_iterator = io::BufReader::new(file).lines();
+        let file = include_str!("../data/ascii_map.txt");
+        let cursor = Cursor::new(file.as_bytes());
+        let file_iterator = io::BufReader::new(cursor).lines();
 
         for (i, char) in file_iterator.enumerate() {
             let mut char = char.unwrap();
@@ -42,7 +41,7 @@ pub mod url_encoder {
     ///
     /// A string representing the URL-encoded version of the input string.
     pub fn encode_str(input: &str, skip_alphanumeric: bool) -> String {
-        let map = generate_lookup("map.txt").unwrap();
+        let map = generate_lookup().unwrap();
         let mut output = Vec::new();
         for c in input.chars() {
             if skip_alphanumeric && c.is_alphanumeric() {
@@ -82,7 +81,7 @@ mod tests {
         .collect();
 
         // Call the function to generate the lookup map
-        let result = url_encoder::generate_lookup(file_path);
+        let result = url_encoder::generate_lookup();
 
         // Check if the function result is Ok
         assert!(result.is_ok());

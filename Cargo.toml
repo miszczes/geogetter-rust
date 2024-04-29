@@ -1,6 +1,6 @@
 [package]
 name = "geogetter"
-version = "0.1.1"
+version = "0.1.4"
 edition = "2021"
 description = "simple library that connects to the OpenStreetMap API to retrive all the information about the given string"
 license = "MIT OR Apache-2.0"

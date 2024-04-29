@@ -11,13 +11,13 @@ pub use serde::{Deserialize, Serialize};
 /// Represents the address structure containing administrative, town, county, state, postcode, country, and country code.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Address {
-    pub administrative: String,
-    pub town: String,
-    pub county: String,
-    pub state: String,
-    pub postcode: String,
-    pub country: String,
-    pub country_code: String,
+    pub administrative: Option<String>,
+    pub town: Option<String>,
+    pub county: Option<String>,
+    pub state: Option<String>,
+    pub postcode: Option<String>,
+    pub country: Option<String>,
+    pub country_code: Option<String>,
 }
 
 /// Represents the location structure containing latitude, longitude, address type, name, display name, address, and bounding box.
@@ -25,9 +25,9 @@ pub struct Address {
 pub struct Location {
     pub lat: String,
     pub lon: String,
-    pub addresstype: String,
-    pub name: String,
-    pub display_name: String,
+    pub addresstype: Option<String>,
+    pub name: Option<String>,
+    pub display_name: Option<String>,
     pub address: Address,
     pub boundingbox: Vec<String>,
 }
@@ -45,28 +45,30 @@ pub struct Location {
 /// # Examples
 ///
 /// ```
-/// use geogetter::get_location;
-///
 /// #[tokio::main]
 /// async fn main() {
-///     // Input string for location search
-///     let input_str = "Mozzila Headquarters";
-///
-///     // Call the asynchronous function
-///     match get_location(input_str).await {
+///     let input_str = "1600 Amphitheatre Parkway, Mountain View, CA";
+///     
+///     match geogetter::get_location(input_str).await {
 ///         Ok(locations) => {
-///             // Ensure that the result is not empty
-///             assert!(!locations.is_empty());
-///             // Print the first location for inspection
-///             println!("{:?}", locations[0]);
+///             if locations.is_empty() {
+///                 println!("No location found for the input.");
+///             } else {
+///                 println!("Location found:");
+///                 for location in locations {
+///                     println!("Name: {}", location.name.unwrap_or_else(|| "Unknown".to_string()));
+///                     println!("Address: {}", location.display_name.unwrap_or_else(|| "Unknown".to_string()));
+///                     // Print other relevant information if needed
+///                 }
+///             }
 ///         }
-///         Err(e) => {
-///             // Handle errors
-///             println!("Error occurred: {:?}", e);
+///         Err(err) => {
+///             eprintln!("Error occurred: {}", err);
 ///         }
 ///     }
 /// }
 /// ```
+
 pub async fn get_location(input_str: &str) -> Result<Vec<Location>, Box<dyn std::error::Error>> {
     let url = format!(
         "https://nominatim.openstreetmap.org/search?addressdetails=1&q={}&format=jsonv2&limit=1",
@@ -82,7 +84,23 @@ pub async fn get_location(input_str: &str) -> Result<Vec<Location>, Box<dyn std:
         .await?;
     let res_json: Vec<Location> = serde_json::from_str(&http_resp)?;
 
-    Ok(res_json)
+    let filtered_locations: Vec<Location> = res_json
+        .into_iter()
+        .filter(|location| {
+            location.address.administrative.is_some()
+                && location.address.town.is_some()
+                && location.address.county.is_some()
+                && location.address.state.is_some()
+                && location.address.postcode.is_some()
+                && location.address.country.is_some()
+                && location.address.country_code.is_some()
+                && location.addresstype.is_some()
+                && location.name.is_some()
+                && location.display_name.is_some()
+        })
+        .collect();
+
+    Ok(filtered_locations)
 }
 
 #[cfg(test)]
