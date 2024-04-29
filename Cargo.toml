@@ -1,9 +1,11 @@
 [package]
 name = "geogetter"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 description = "simple library that connects to the OpenStreetMap API to retrive all the information about the given string"
 license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/miszczes/geogetter-rust"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

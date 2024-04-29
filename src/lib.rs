@@ -84,8 +84,6 @@ pub async fn get_location(input_str: &str) -> Result<Vec<Location>, Box<dyn std:
         .await?;
     let res_json: Vec<Location> = serde_json::from_str(&http_resp)?;
 
-    println!("{:?}", res_json);
-
     let filtered_locations: Vec<Location> = res_json
         .into_iter()
         .filter(|location| location.name.is_some() && location.display_name.is_some())
