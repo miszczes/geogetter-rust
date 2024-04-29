@@ -84,20 +84,11 @@ pub async fn get_location(input_str: &str) -> Result<Vec<Location>, Box<dyn std:
         .await?;
     let res_json: Vec<Location> = serde_json::from_str(&http_resp)?;
 
+    println!("{:?}", res_json);
+
     let filtered_locations: Vec<Location> = res_json
         .into_iter()
-        .filter(|location| {
-            location.address.administrative.is_some()
-                && location.address.town.is_some()
-                && location.address.county.is_some()
-                && location.address.state.is_some()
-                && location.address.postcode.is_some()
-                && location.address.country.is_some()
-                && location.address.country_code.is_some()
-                && location.addresstype.is_some()
-                && location.name.is_some()
-                && location.display_name.is_some()
-        })
+        .filter(|location| location.name.is_some() && location.display_name.is_some())
         .collect();
 
     Ok(filtered_locations)
